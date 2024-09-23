@@ -1,0 +1,29 @@
+# Binaries for programs and plugins (build artifacts)
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Directories
+/vendor/
+bin/
+cmd/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+.vscode/
+.idea/
+*.swp
+
+# Go modules
+go.sum
+
+# Sensitive files
+.env

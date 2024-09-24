@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"net/http"
-	"stripe-payment-service/handlers"
+
+	"stripe-payment-service/handlers/payment_handler"
+	"stripe-payment-service/handlers/refund_handler"
 
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v72"
@@ -28,7 +30,10 @@ func main() {
 	log.Println("Initializing Stripe Payment Service with Test Mode...")
 
 	// Register the /charge route
-	http.HandleFunc("/charge", handlers.HandleCharge)
+	http.HandleFunc("/charge", payment_handler.HandleCharge)
+
+	// Register the /refund route
+	http.HandleFunc("/refund", refund_handler.HandleRefund)
 
 	// Start the HTTP server
 	log.Println("Server starting on port 8080...")

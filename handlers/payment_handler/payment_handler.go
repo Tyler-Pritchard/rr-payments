@@ -1,4 +1,4 @@
-package handlers
+package payment_handler
 
 import (
 	"encoding/json"

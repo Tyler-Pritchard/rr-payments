@@ -19,28 +19,23 @@ type ChargeRequest struct {
 
 // ValidateChargeRequest checks if the input is valid
 func ValidateChargeRequest(req ChargeRequest) error {
-	// Validate the amount (must be positive)
 	if req.Amount <= 0 {
 		return errors.New("invalid amount: must be greater than 0")
 	}
-
-	// Validate the currency (here we just check if it's not empty, but you could also check against a list of valid currency codes)
 	if req.Currency == "" {
 		return errors.New("invalid currency: must not be empty")
 	}
-
-	// Validate the source (must not be empty)
 	if req.Source == "" {
 		return errors.New("invalid source: must not be empty")
 	}
-
 	return nil
 }
 
 // HandleCharge processes a payment charge via Stripe
 func HandleCharge(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body
 	var req ChargeRequest
+
+	// Parse the request body
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
@@ -64,14 +59,50 @@ func HandleCharge(w http.ResponseWriter, r *http.Request) {
 
 	ch, err := charge.New(params)
 	if err != nil {
-		log.Printf("Charge failed: %v\n", err)
-		http.Error(w, "Charge failed", http.StatusInternalServerError)
+		if stripeErr, ok := err.(*stripe.Error); ok {
+			// Handle different types of Stripe errors
+			switch stripeErr.Code {
+			case stripe.ErrorCodeCardDeclined:
+				log.Printf("Charge failed: Card Declined - %v\n", stripeErr)
+				http.Error(w, "Card was declined", http.StatusPaymentRequired)
+			case stripe.ErrorCodeExpiredCard:
+				log.Printf("Charge failed: Expired Card - %v\n", stripeErr)
+				http.Error(w, "Card has expired", http.StatusPaymentRequired)
+			case stripe.ErrorCodeIncorrectCVC:
+				log.Printf("Charge failed: Incorrect CVC - %v\n", stripeErr)
+				http.Error(w, "Incorrect CVC", http.StatusPaymentRequired)
+			default:
+				// Generic error handling for invalid requests
+				if _, isInvalidRequest := err.(*stripe.InvalidRequestError); isInvalidRequest {
+					log.Printf("Charge failed: Invalid Request - %v\n", stripeErr)
+					http.Error(w, "Invalid request parameters", http.StatusBadRequest)
+				} else {
+					log.Printf("Charge failed: %v\n", stripeErr)
+					http.Error(w, "Payment processing error", http.StatusInternalServerError)
+				}
+			}
+		} else {
+			// Handle generic errors
+			log.Printf("Charge failed: %v\n", err)
+			http.Error(w, "Payment processing error", http.StatusInternalServerError)
+		}
 		return
 	}
 
-	log.Printf("Charge succeeded: %s\n", ch.ID)
+	log.Printf("Charge succeeded: %s, Amount: %d %s, Status: %s, Receipt: %s\n",
+		ch.ID, ch.Amount, ch.Currency, ch.Status, ch.ReceiptURL)
 
-	// Respond with the charge ID
+	// Respond with the relevant charge details
+	response := map[string]interface{}{
+		"charge_id":   ch.ID,
+		"amount":      ch.Amount,
+		"currency":    ch.Currency,
+		"status":      ch.Status,
+		"receipt_url": ch.ReceiptURL,
+	}
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"charge_id": ch.ID})
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("Error encoding response: %v\n", err)
+	}
 }

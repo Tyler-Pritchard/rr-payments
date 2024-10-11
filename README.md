@@ -2,7 +2,7 @@
 
 ## Overview
 
-```rr-payments``` is a Go-based microservice designed for secure and scalable payment processing using the Stripe API. This project is a part of a professional engineering portfolio showcasing expertise in backend development, microservice architecture, and API integration. The service provides basic payment functionality, including creating charges and issuing refunds, with built-in input validation, structured error handling, and Stripe's best practices.
+```rr-payments``` is a Go-based microservice designed for secure and scalable payment processing using the Stripe API. The service provides basic payment functionality, including creating charges and issuing refunds, with built-in input validation, structured error handling, and Stripe's best practices.
 
 ## Key Features
 

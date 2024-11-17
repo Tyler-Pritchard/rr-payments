@@ -36,8 +36,8 @@ func main() {
 	http.HandleFunc("/refund", refund_handler.HandleRefund)
 
 	// Start the HTTP server
-	log.Println("Server starting on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	log.Println("Server starting on port 8082...")
+	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatalf("Error starting server: %s\n", err)
 	}
 }

@@ -6,11 +6,11 @@
 
 ## Key Features
 
-- <b>Stripe Payment Integration:</b> Seamlessly handles charge creation and refunds using Stripe's Go SDK.
-- <b>Microservice Architecture:</b> Designed as a standalone microservice with modularity and extensibility in mind.
-- <b>Input Validation & Error Handling:</b> Implements thorough validation for payment fields and detailed error responses.
-- <b>Well-Documented Code:</b> Clear structure and comprehensive logging for easy debugging and maintenance.
-- <b>Secure Environment Configuration:</b> Utilizes environment variables for secure management of sensitive data (e.g., Stripe API keys).
+- **Stripe Payment Integration:** Seamlessly handles charge creation and refunds using Stripe's Go SDK.
+- **Microservice Architecture:** Designed as a standalone microservice with modularity and extensibility in mind.
+- **Input Validation & Error Handling:** Implements thorough validation for payment fields and detailed error responses.
+- **Well-Documented Code:** Clear structure and comprehensive logging for easy debugging and maintenance.
+- **Secure Environment Configuration:** Utilizes environment variables for secure management of sensitive data (e.g., Stripe API keys).
 
 ## File Structure
 
@@ -38,9 +38,9 @@ rr-payments/
 
 ### Prerequisites
 
-- <b>Go 1.16 or later</b> installed
-- <b>Stripe Account</b> with Test Mode enabled
-- <b>Stripe API Key</b> stored as an environment variable in ```.env```:
+- **Go 1.16 or later** installed
+- **Stripe Account** with Test Mode enabled
+- **Stripe API Key** stored as an environment variable in `.env`:
 
 ```
 STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxx
@@ -61,13 +61,13 @@ go mod tidy
 ```
 go run cmd/stripe-payment-service/main.go
 ```
-4. The service will be available at ```http://localhost:8080```.
+4. The service will be available at `http://localhost:8080`.
 
 ### Endpoints
 
-```/charge``` - <b>Create a Payment Charge</b>
-</b>Method:</b> ```POST```
-<b>Request Body:</b>
+#### `/charge` - **Create a Payment Charge**
+- **Method:** `POST`
+- **Request Body:**
 ```
 {
   "amount": 2000,
@@ -75,7 +75,7 @@ go run cmd/stripe-payment-service/main.go
   "source": "tok_visa"
 }
 ```
-- <b>Response:</b>
+- **Response:**
 ```
 {
   "charge_id": "ch_1IuR7X2eZvKYlo2C8z0Bv2Cj",
@@ -85,15 +85,16 @@ go run cmd/stripe-payment-service/main.go
   "receipt_url": "https://pay.stripe.com/receipts/payment/..."
 }
 ```
-```/refund``` <b>- Issue a Refund for a Charge</b>
-- <b>Method:</b> ```POST```
-- <b>Request Body:</b>
+
+#### `/refund` - **Issue a Refund for a Charge**
+- **Method:** `POST`
+- **Request Body:**
 ```
 {
   "charge_id": "ch_1IuR7X2eZvKYlo2C8z0Bv2Cj"
 }
 ```
-- <b>Response:</b>
+- **Response:**
 ```
 {
   "refund_id": "re_1IuS8H2eZvKYlo2C8z0Bv2Cf",
@@ -101,6 +102,55 @@ go run cmd/stripe-payment-service/main.go
   "status": "succeeded"
 }
 ```
+
+## Docker Deployment
+
+### Running with Docker
+
+To containerize and run `rr-payments` as a Docker container:
+
+1. **Build the Docker image:**
+   ```sh
+   docker build -t rr-payments .
+   ```
+2. **Run the container:**
+   ```sh
+   docker run -d --name rr-payments -p 8082:8082 --env-file=secrets.env rr-payments
+   ```
+3. **Verify the service is running:**
+   ```sh
+   curl http://localhost:8082/health
+   ```
+
+### Running with Docker Compose
+
+To run `rr-payments` as part of a multi-container setup:
+
+1. **Ensure Docker Compose is installed.**
+2. **Start the service using Compose:**
+   ```sh
+   docker-compose -f docker-compose.yml up -d --build
+   ```
+3. **Check running containers:**
+   ```sh
+   docker ps
+   ```
+4. **Stop the service:**
+   ```sh
+   docker-compose down
+   ```
+
+### Ensuring Network Connectivity
+
+If using a shared network between microservices:
+```sh
+docker network create shared_network || true
+```
+Ensure `rr-payments` is connected:
+```sh
+docker network connect shared_network rr-payments
+```
+
 ## Design Considerations
 
 ### Security
@@ -125,16 +175,16 @@ go run cmd/stripe-payment-service/main.go
 
 ## Technical Stack
 
-- <b>Language:</b> Go
-- <b>Framework:</b> Standard Library with ```net/http```
-- <b>Stripe SDK:</b> ```github.com/stripe/stripe-go/v72```
-- <b>Environment Management:</b> ```github.com/joho/godotenv```
+- **Language:** Go
+- **Framework:** Standard Library with `net/http`
+- **Stripe SDK:** `github.com/stripe/stripe-go/v72`
+- **Environment Management:** `github.com/joho/godotenv`
+- **Containerization:** Docker, Docker Compose
 
-# License
+## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Contact
 
 For questions or collaboration, please reach out via LinkedIn or check out more of my work on [GitHub](https://www.github.com/tyler-pritchard/rr-payments).
-

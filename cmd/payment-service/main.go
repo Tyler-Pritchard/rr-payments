@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
-
 	"net/http"
+	"os"
 
 	"stripe-payment-service/handlers/payment_handler"
 	"stripe-payment-service/handlers/refund_handler"
@@ -14,10 +14,12 @@ import (
 )
 
 func main() {
-	// Load environment variables from the .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	// Load environment variables from .env only if running locally
+	if os.Getenv("DOCKER_ENV") == "" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Println("Warning: No .env file found, falling back to system environment variables.")
+		}
 	}
 
 	// Set the Stripe API key from the environment variable
@@ -29,15 +31,22 @@ func main() {
 
 	log.Println("Initializing Stripe Payment Service with Test Mode...")
 
-	// Register the /charge route
-	http.HandleFunc("/charge", payment_handler.HandleCharge)
+	// Create a new HTTP multiplexer (router)
+	mux := http.NewServeMux()
 
-	// Register the /refund route
-	http.HandleFunc("/refund", refund_handler.HandleRefund)
+	// Register routes
+	mux.HandleFunc("/charge", payment_handler.HandleCharge)
+	mux.HandleFunc("/refund", refund_handler.HandleRefund)
+
+	// Register the health check route
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status":"UP"}`)
+	})
 
 	// Start the HTTP server
 	log.Println("Server starting on port 8082...")
-	if err := http.ListenAndServe(":8082", nil); err != nil {
+	if err := http.ListenAndServe(":8082", mux); err != nil {
 		log.Fatalf("Error starting server: %s\n", err)
 	}
 }

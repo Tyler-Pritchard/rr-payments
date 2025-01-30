@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  rr-payments:
+    build: .
+    container_name: rr-payments
+    ports:
+      - "8082:8082"
+    env_file:
+      - secrets.env
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external: true

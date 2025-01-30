@@ -27,3 +27,4 @@ go.sum
 # Sensitive files
 .env
 secrets.env
+rr-payments/secrets.envsecrets.env

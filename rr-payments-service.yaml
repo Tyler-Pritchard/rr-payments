@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rr-payments
+spec:
+  selector:
+    app: rr-payments
+  ports:
+    - protocol: TCP
+      port: 8080          # Port accessible within the cluster
+      targetPort: 8082    # Port your Go app listens on
+  type: ClusterIP

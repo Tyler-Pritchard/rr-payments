@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rr-payments
+  labels:
+    app: rr-payments
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rr-payments
+  template:
+    metadata:
+      labels:
+        app: rr-payments
+    spec:
+      containers:
+      - name: rr-payments
+        image: rr-payments:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8082      # Matches the port your Go server is listening on
+        envFrom:
+        - secretRef:
+            name: rr-payments-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

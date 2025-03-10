@@ -12,6 +12,14 @@
 - **Well-Documented Code:** Clear structure and comprehensive logging for easy debugging and maintenance.
 - **Secure Environment Configuration:** Utilizes environment variables for secure management of sensitive data (e.g., Stripe API keys).
 
+## Technical Stack
+
+- **Language:** Go
+- **Framework:** Standard Library with `net/http`
+- **Stripe SDK:** `github.com/stripe/stripe-go/v72`
+- **Environment Management:** `github.com/joho/godotenv`
+- **Containerization:** Docker, Docker Compose
+
 ## File Structure
 
 ```
@@ -151,6 +159,71 @@ Ensure `rr-payments` is connected:
 docker network connect shared_network rr-payments
 ```
 
+### 📦 Kubernetes Deployment
+
+You can deploy `rr-payments` into a Kubernetes cluster with full integration into a production-grade microservice architecture.
+
+#### 1. ✅ Prerequisites
+- Minikube or a cloud-based Kubernetes cluster.
+- Stripe API key stored securely in a Kubernetes Secret.
+- Configured Kubernetes manifests:  
+  - `rr-payments-deployment.yaml`  
+  - `rr-payments-service.yaml`
+
+#### 2. 🛠 Deployment Steps
+
+```bash
+kubectl apply -f rr-payments/rr-payments-deployment.yaml
+kubectl apply -f rr-payments/rr-payments-service.yaml
+```
+
+Ensure the pods are running:
+```bash
+kubectl get pods -l app=rr-payments
+```
+
+Verify the health endpoint is responding:
+```bash
+curl http://<CLUSTER-IP>:8082/health
+```
+
+### 🔐 Kubernetes Secrets
+
+Your `secrets.env` file should be converted into a Kubernetes Secret:
+
+```bash
+kubectl create secret generic rr-payments-secret --from-env-file=secrets.env
+```
+
+This allows your deployment to securely mount the `STRIPE_SECRET_KEY` without exposing it in your source code.
+
+---
+
+### 📊 Monitoring with Prometheus & Grafana
+
+This service is instrumented for observability and metrics collection using Prometheus and Grafana.
+
+#### Prometheus Integration
+The deployment includes the following annotations to enable scraping by Prometheus:
+
+```yaml
+annotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8082"
+  prometheus.io/path: "/metrics"
+```
+
+If `/metrics` does not exist natively, you may expose basic metrics through a dedicated HTTP handler in Go using a library like `prometheus/client_golang`. Otherwise, remove the Prometheus annotations or use custom instrumentation as needed.
+
+#### Grafana Dashboards
+You can visualize key metrics (e.g., request rate, latency, error rates) via Grafana. The Prometheus target should detect the `rr-payments` pods automatically and begin scraping metrics.
+
+Example Dashboard Panels:
+- Total charges created
+- Refund success rate
+- API latency and error count
+- Request throughput per endpoint
+
 ## Design Considerations
 
 ### Security
@@ -167,19 +240,12 @@ docker network connect shared_network rr-payments
 ### Performance
 - Lightweight service with low memory footprint, designed to handle high-throughput payment requests efficiently.
 
-## Future Enhancements
+### 🚀 Future Enhancements
 
-- Implementing subscription-based payments.
-- Adding support for webhooks to track charge updates.
-- Introducing a front-end client for managing payments and viewing transaction history.
-
-## Technical Stack
-
-- **Language:** Go
-- **Framework:** Standard Library with `net/http`
-- **Stripe SDK:** `github.com/stripe/stripe-go/v72`
-- **Environment Management:** `github.com/joho/godotenv`
-- **Containerization:** Docker, Docker Compose
+- Expose native Prometheus metrics via `prometheus/client_golang`.
+- Add liveness/readiness probes in Kubernetes deployment YAML for health monitoring.
+- Integrate structured logging and distributed tracing using OpenTelemetry or similar tools.
+- Expand Grafana dashboards with richer financial observability panels.
 
 ## License
 
